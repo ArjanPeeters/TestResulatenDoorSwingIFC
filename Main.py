@@ -1,7 +1,26 @@
 import streamlit as st
 import pandas as pd
+from datetime import date
+import re
 
-# Definieer je matrix met beschrijvingen
+st.set_page_config(layout="wide")  # ⬅️ Brede modus inschakelen
+
+# ===== Invoervelden voor bestandsnaam =====
+st.title("Deur-swingline testmatrix")
+
+col1, col2 = st.columns(2)
+with col1:
+    checksoftware = st.text_input("🛠️ Checksoftware", placeholder="Bijv. Solibri v9.13")
+with col2:
+    controle_datum = st.date_input("📅 Datum van controle", value=date.today())
+
+st.markdown("Geef per combinatie aan wat het resultaat is (correct, fout, genegeerd, etc.).")
+
+# Sanitize bestandsnaam
+def sanitize_filename(s):
+    return re.sub(r"[^a-zA-Z0-9_\-]", "_", s)
+
+# Matrixdefinities
 test_matrix = [
     ("Default deur Autodesk", "Works fine"),
     ("Swinglines nested", "Swinglines are ignored"),
@@ -14,43 +33,48 @@ test_matrix = [
     ("Swinglines shared nested: RCP downwards", "Flipping and mirroring is going wrong. Rotation 180 degrees works fine"),
 ]
 
-# Kolommen (transformaties)
 kolommen = [
     "Default", "Flipped X", "Flipped Y", "Rotated 180",
     "Mirror X", "Mirror Y", "Group Default", "Group Rotated 180",
     "Group Mirror X", "Group Mirror Y"
 ]
 
-status_opties = ["✅ Correct", "⚠️ Fout", "❌ Genegeerd", "❓ Onbekend"]
+status_opties = ["", "✅ Correct", "⚠️ Fout", "❌ Genegeerd", "❓ Onbekend"]
 
-# Laad eerder ingevulde data
+# Load bestaande data
 try:
-    df = pd.read_csv("testresultaten.csv", index_col=0)
+    df = pd.read_csv("tijdelijke_testresultaten.csv", index_col=0)
 except FileNotFoundError:
     df = pd.DataFrame(index=[t[0] for t in test_matrix], columns=kolommen)
 
-# Titel
-st.title("Deur-swingline testmatrix")
-st.markdown("Geef per combinatie aan wat het resultaat is (correct, fout, genegeerd, etc.).")
+# ===== Kolomheaders bovenaan renderen =====
+st.markdown("#### Testmatrix")
+kolom_headers = st.columns(len(kolommen) + 1)
+kolom_headers[0].markdown("**Testcase**")
+for i, kolom in enumerate(kolommen):
+    kolom_headers[i+1].markdown(f"**{kolom}**")
 
-# Itereer per rij (type test + toelichting)
+# ===== Matrixinvoer per rij =====
 for test_naam, toelichting in test_matrix:
-    st.markdown(f"### {test_naam}")
-    st.markdown(f"*_{toelichting}_*")
-
-    cols = st.columns(len(kolommen))
+    rij = st.columns(len(kolommen) + 1)
+    rij[0].markdown(f"**{test_naam}**  \n*_{toelichting}_*")
     for i, kolom in enumerate(kolommen):
         key = f"{test_naam}_{kolom}"
-        huidige_waarde = df.loc[test_naam, kolom] if not pd.isna(df.loc[test_naam, kolom]) else status_opties[0]
-        df.loc[test_naam, kolom] = cols[i].selectbox(
-            kolom,
+        huidige_waarde = df.loc[test_naam, kolom] if not pd.isna(df.loc[test_naam, kolom]) else ""
+        df.loc[test_naam, kolom] = rij[i+1].selectbox(
+            "",
             status_opties,
             index=status_opties.index(huidige_waarde) if huidige_waarde in status_opties else 0,
             key=key
         )
 
+# ===== Opslaan met aangepaste bestandsnaam =====
 st.markdown("---")
-# Opslaan
-if st.button("💾 Opslaan als CSV"):
-    df.to_csv("testresultaten.csv")
-    st.success("Resultaten opgeslagen in testresultaten.csv!")
+if st.button("💾 Opslaan"):
+    if not checksoftware:
+        st.warning("Vul eerst de naam van de checksoftware in.")
+    else:
+        filename = f"{sanitize_filename(checksoftware)}_{controle_datum.strftime('%Y%m%d')}.csv"
+        df.to_csv(filename)
+        df.to_csv("tijdelijke_testresultaten.csv")  # Voor herladen bij volgende keer
+        st.success(f"Resultaten opgeslagen als: `{filename}`")
