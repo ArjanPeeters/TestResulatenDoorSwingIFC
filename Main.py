@@ -70,11 +70,29 @@ for test_naam, toelichting in test_matrix:
 
 # ===== Opslaan met aangepaste bestandsnaam =====
 st.markdown("---")
+import io
+
 if st.button("💾 Opslaan"):
     if not checksoftware:
         st.warning("Vul eerst de naam van de checksoftware in.")
     else:
         filename = f"{sanitize_filename(checksoftware)}_{controle_datum.strftime('%Y%m%d')}.csv"
-        df.to_csv(filename)
-        df.to_csv("tijdelijke_testresultaten.csv")  # Voor herladen bij volgende keer
-        st.success(f"Resultaten opgeslagen als: `{filename}`")
+        
+        # Opslaan lokaal (voor reload)
+        df.to_csv("tijdelijke_testresultaten.csv")
+        
+        # Downloadbare versie (in geheugen)
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer)
+        csv_data = csv_buffer.getvalue()
+
+        st.success(f"Resultaten klaar om te downloaden als: `{filename}`")
+
+        # Downloadknop
+        st.download_button(
+            label="📥 Download CSV",
+            data=csv_data,
+            file_name=filename,
+            mime="text/csv"
+        )
+

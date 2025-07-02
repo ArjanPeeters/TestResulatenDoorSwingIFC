@@ -1,0 +1,10 @@
+,Default,Flipped X,Flipped Y,Rotated 180,Mirror X,Mirror Y,Group Default,Group Rotated 180,Group Mirror X,Group Mirror Y
+Default deur Autodesk,,,,,,,,,,
+Swinglines nested,,,,,,,,,,
+Swinglines shared nested,,,✅ Correct,,✅ Correct,⚠️ Fout,,,,
+Operation: SINGLE_SWING_RIGHT,,,,,,,,,,
+Operation: SINGLE_SWING_RIGHT nested,,,,,,✅ Correct,,,,
+Unhosted swinglines,,,,,,,,,,
+Unhosted swinglines shared,,,,❓ Onbekend,,,,,,
+Swinglines shared nested: RCP upwards,,,,,,,,,,
+Swinglines shared nested: RCP downwards,,,,,,,,,,
