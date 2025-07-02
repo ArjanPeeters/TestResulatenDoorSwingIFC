@@ -57,7 +57,7 @@ for i, kolom in enumerate(kolommen):
 # ===== Matrixinvoer per rij =====
 for test_naam, toelichting in test_matrix:
     rij = st.columns(len(kolommen) + 1)
-    rij[0].markdown(f"**{test_naam}**  \n*_{toelichting}_*")
+    rij[0].markdown(f"**{test_naam}**")
     for i, kolom in enumerate(kolommen):
         key = f"{test_naam}_{kolom}"
         huidige_waarde = df.loc[test_naam, kolom] if not pd.isna(df.loc[test_naam, kolom]) else ""
